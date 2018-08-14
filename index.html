@@ -1,0 +1,345 @@
+<html>
+<script src='http://echarts.baidu.com/dist/echarts.min.js'></script>
+<script type="text/javascript">
+    var dataTable
+    var dateArray = [];
+    var countArray = [];
+    var errorArray = [];
+    var gasAverage = [];
+    var gasHigh = [];
+    var gasLow = [];
+    var alldata = {};
+    var listMissing = true;
+    const prepareCharts = (jsonData) => {
+        dataTable = jsonData.table;
+        for (var c = 0; c < dataTable.length - 1; c++) {
+            dateArray.push(new Date(dataTable[c].date * 1000).toUTCString())
+            countArray.push(dataTable[c].count);
+            errorArray.push(dataTable[c].errorCount);
+            gasAverage.push(dataTable[c].gasAverage * 1e-18);
+            gasHigh.push(dataTable[c].gasHigh * 1e-18);
+            gasLow.push(dataTable[c].gasLow * 1e-18);
+        }
+        alldata = dataTable[dataTable.length - 1]
+        // based on prepared DOM, initialize echarts instance
+        var countChart = echarts.init(document.getElementById("content"));
+
+        const option = {
+            title: {
+                text: 'Transactions per day',
+                // text: echarts.format.addCommas(dataTable.length - 1) + ' Data',
+                left: 10
+            },
+            xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                data: dateArray
+                //data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+            },
+            yAxis: {
+                type: 'value'
+            },
+            series: [
+                {
+                    data: countArray,
+                    //data: [820, 932, 901, 934, 1290, 1330, 1320],
+                    type: 'line',
+                    areaStyle: {}
+                }
+            ]
+        }
+        // use configuration item and data specified to show chart
+        countChart.setOption(option);
+        document.getElementById('content').style.display = "inline";
+        document.getElementById('myItemList').style.display = "none";
+    }
+
+    function showErrorCount() {
+        var countChart = echarts.init(document.getElementById("content"));
+        const option = {
+            title: {
+                text: 'Errors'
+            },
+            legend: {
+                data: ['Transactions', 'Errors'],
+                align: 'left'
+            },
+            toolbox: {
+                // y: 'bottom',
+                feature: {
+                    dataZoom: {
+                        yAxisIndex: false
+                    },
+                    magicType: {
+                        type: ['line', 'bar']
+                    },
+                    dataView: {},
+                    saveAsImage: {
+                        pixelRatio: 2
+                    },
+                }
+            },
+            tooltip: {
+                trigger: 'axis',
+                //trigger: 'item',
+                alwaysShowContent: true,
+                triggerOn: 'mousemove|click',
+            },
+            dataZoom: [{
+                type: 'inside'
+            }, {
+                type: 'slider'
+            }],
+            xAxis: {
+                data: dateArray,
+                silent: false,
+                splitLine: {
+                    show: false
+                }
+            },
+            yAxis: {
+            },
+            series: [{
+                name: 'Transactions',
+                type: 'bar',
+                data: countArray,
+                animationDelay: function (idx) {
+                    return idx * 10;
+                }
+            }, {
+                name: 'Errors',
+                type: 'bar',
+                data: errorArray,
+                animationDelay: function (idx) {
+                    return idx * 10 + 100;
+                }
+            }],
+            animationEasing: 'elasticOut',
+            animationDelayUpdate: function (idx) {
+                return idx * 5;
+            }
+        };
+        countChart.setOption(option);
+        document.getElementById('content').style.display = "inline";
+        document.getElementById('myItemList').style.display = "none";
+    }
+
+    function showGas() {
+        var countChart = echarts.init(document.getElementById("content"));
+        const option = {
+            title: {
+                text: 'Gas'
+            },
+            legend: {
+                data: ['gasAverage', 'gasHigh', 'gasLow'],
+                align: 'left'
+            },
+            toolbox: {
+                // y: 'bottom',
+                feature: {
+                    dataZoom: {
+                        yAxisIndex: false
+                    },
+                    magicType: {
+                        type: ['line', 'bar']
+                    },
+                    dataView: {},
+                    saveAsImage: {
+                        pixelRatio: 2
+                    }
+                }
+            },
+            tooltip: {
+                trigger: 'axis',
+                alwaysShowContent: true,
+                triggerOn: 'mousemove|click',
+            },
+            dataZoom: [{
+                type: 'inside'
+            }, {
+                type: 'slider'
+            }],
+            xAxis: {
+                data: dateArray,
+                silent: false,
+                splitLine: {
+                    show: false
+                }
+            },
+            yAxis: {
+            },
+            series: [{
+                name: 'gasAverage',
+                type: 'bar',
+                data: gasAverage,
+                animationDelay: function (idx) {
+                    return idx * 10 + 100;
+                }
+            }, {
+                name: 'gasHigh',
+                type: 'bar',
+                data: gasHigh,
+                animationDelay: function (idx) {
+                    return idx * 10 + 100;
+                }
+            }, {
+                name: 'gasLow',
+                type: 'bar',
+                data: gasLow,
+                animationDelay: function (idx) {
+                    return idx * 10 + 100;
+                }
+            }],
+            animationEasing: 'elasticOut',
+            animationDelayUpdate: function (idx) {
+                return idx * 5;
+            }
+        };
+        countChart.setOption(option);
+        document.getElementById('content').style.display = "inline";
+        document.getElementById('myItemList').style.display = "none";
+    }
+
+    function makeList() {
+        var ul = document.createElement('ul');
+
+        document.getElementById('myItemList').appendChild(ul);
+
+        var keys = Object.keys(alldata);
+        var values = Object.values(alldata);
+
+        for (var c = 0; c < keys.length; c++) {
+            var li = document.createElement('li');
+            ul.appendChild(li);
+            if (keys[c].includes('count')) {
+                var h4 = document.createElement('h4');
+                li.appendChild(h4);
+                li.type = "square";
+                var textTemp = keys[c].toString().substring(0, keys[c].length - 5)
+                if (textTemp == '') {
+                    textTemp = 'All Functions'
+                } else { textTemp = textTemp.substring(0, textTemp.length - 1) }
+                h4.innerText += textTemp + ':'
+                var li2 = document.createElement('li');
+                ul.appendChild(li2);
+                li2.innerHTML += keys[c] + ' : ' + values[c]
+            } else {
+                if (values[c] > 100000) { values[c] = values[c] * 1e-18 + ' ETH' }
+                li.innerHTML += keys[c] + ' : ' + values[c];
+            }
+
+        };
+    }
+
+    function showComData() {
+        if (listMissing) {
+            makeList();
+            listMissing = false;
+        }
+        document.getElementById('content').style.display = "none";
+        document.getElementById('myItemList').style.display = "inline";
+    }
+
+    function makeList() {
+        var ul = document.createElement('ul');
+    }
+
+
+    fetch('http://localhost:8080/data/saveFile.json').then(res => res.json()).then(prepareCharts)
+</script>
+
+<head>
+
+
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+            font-family: Comic Sans MS, arial, verdana, tahoma, sans-serif;
+            height: 100%;
+        }
+
+        #DivMenu {
+            width: 100%;
+            display: flex;
+            background-color: rgb(133, 138, 148);
+            justify-content: center;
+
+        }
+
+        nav {
+            /*margin: 50px auto;*/
+            max-width: 700px;
+            width: 100%;
+        }
+
+        #content {
+            float: inherit;
+            width: 100%;
+            height: 100%;
+        }
+
+        #myItemList {
+            float: inherit;
+            width: 100%;
+            height: auto;
+            /* visibility: hidden; */
+            visibility: visible;
+        }
+
+        .menu {
+            padding: 0;
+            margin: 0;
+            /*max-width: 700px;*/
+            height: 50px;
+            /*border-radius: 5px;*/
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            align-items: center;
+            list-style-type: none;
+        }
+
+        .menu li a {
+            text-decoration: none;
+            align-self: center;
+            /*border-radius: 5px;*/
+            font-size: 14px;
+            padding: 10px 15px;
+            color: black;
+        }
+
+        .menu li {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="DivMenu">
+        <nav>
+            <label for="checkbox1">
+                <ul class="menu demo">
+                    <!-- <li><a onclick="return showCount()">Transactions</a></li> -->
+                    <li><a onclick="return showErrorCount()">Transactions and Errors</a></li>
+                    <li><a onclick="return showGas()">Gas</a></li>
+                    <li><a onclick="return showComData()">Combined Data</a></li>
+                    <!-- <li><a onclick="return showCount()">Impressum</a></li> -->
+                </ul>
+            </label>
+        </nav>
+    </div>
+
+
+    <div id="content">
+    </div>
+    <div id="myItemList">
+        <h2>Token-Info</h2>
+    </div>
+
+</body>
+
+<script>makeList()</script>
+
+</html>

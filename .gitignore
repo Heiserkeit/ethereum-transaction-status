@@ -1,0 +1,8 @@
+.vs/
+node_modules/
+quick_save/
+test/
+time.txt
+utils/
+saveFile*
+data/

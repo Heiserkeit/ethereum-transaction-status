@@ -4,6 +4,7 @@
   "description": "",
   "main": "fetch-stats.js",
   "scripts": {
+    "read-abi": "node abi-reader",
     "test": "echo \"Error: no test specified\" && exit 1",
     "web": "http-server -p 8080 ."
   },
@@ -25,6 +26,7 @@
   },
   "devDependencies": {
     "istanbul": "^0.4.5",
+    "prettier": "^1.14.2",
     "tape": "^4.9.1"
   }
 }
